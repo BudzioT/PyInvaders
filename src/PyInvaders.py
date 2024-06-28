@@ -1,5 +1,6 @@
 import sys
 from time import sleep
+from random import randint
 
 import pygame
 
@@ -7,6 +8,7 @@ from Settings import Settings
 from Spaceship import Spaceship
 from Bullet import Bullet
 from Alien import Alien
+from Star import Star
 from Stats import Stats
 from Button import Button
 from Scoreboard import Scoreboard
@@ -45,6 +47,8 @@ class PyInvaders:
         self.bullets = pygame.sprite.Group()
         # Aliens group
         self.aliens = pygame.sprite.Group()
+        # Stars group
+        self.stars = pygame.sprite.Group()
 
         # Create alien fleet
         self._create_fleet()
@@ -64,6 +68,7 @@ class PyInvaders:
                 self.spaceship.update_pos()
                 self.bullets.update()
                 self._update_aliens()
+                self._update_stars()
 
             # Update the surface
             self._update_surface()
@@ -95,6 +100,7 @@ class PyInvaders:
         self.spaceship.draw()
         self._update_bullets()
         self.aliens.draw(surface=self.surface)
+        self.stars.draw(surface=self.surface)
 
         # Draw the scoreboard
         self.scoreboard.draw()
@@ -179,6 +185,17 @@ class PyInvaders:
             # Move vertically down
             current_y += 2 * alien_height
 
+    def _create_starGroup(self):
+        """Create group of stars"""
+        # Create a star for size matters
+        star = Star(self)
+        # While there is still space for stars, spawn them randomly
+        while len(self.stars) < self.settings.star_limit:
+            new_star = Star(self)
+            new_star.rect.x = randint(0, self.settings.window_width - star.surface_rect.width)
+            self.stars.add(new_star)
+
+
     def _create_alien(self, current_x, current_y):
         """Create an alien at the given position, add it to the fleet"""
         # Create a new alien, set its position to current drawing one
@@ -200,6 +217,11 @@ class PyInvaders:
             self._spaceship_hit()
         # Check for collisions between aliens and bottom part of visible surface
         self._check_bottom_collision()
+
+    def _update_stars(self):
+        """Update stars position"""
+        for star in self.stars.sprites():
+            star.update()
 
     def _check_fleet_edges(self):
         """If aliens touch the edge, change the direction"""
@@ -252,6 +274,8 @@ class PyInvaders:
 
         # Decrement spaceships count
         self.stats.spaceship_left -= 1
+        # Update the spaceships count
+        self.scoreboard.set_spaceships()
         # Clean remaining bullets and aliens
         self.bullets.empty()
         self.aliens.empty()
@@ -272,6 +296,12 @@ class PyInvaders:
             if alien.rect.bottom >= self.settings.window_height:
                 self._spaceship_hit()
                 break
+        # Clean stars
+        for star in self.stars.sprites().copy():
+            # Check if the star is under the visible surface, clean it
+            if star.rect.top >= self.settings.window_height:
+                self.stars.remove(star)
+                print("Star removed!!!")
 
     def _check_start(self, mouse_pos):
         """If mouse is on the Start button, start the game if it isn't started already"""
@@ -282,6 +312,8 @@ class PyInvaders:
             self.scoreboard.set_score()
             # Reset the level
             self.scoreboard.set_level()
+            # Reset spaceships count
+            self.scoreboard.set_spaceships()
 
             # Return speed to basic one
             self.settings.initialize_dynamic()

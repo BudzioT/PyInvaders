@@ -12,6 +12,9 @@ class Settings:
         # Spaceship settings
         self.spaceship_limit = 3
 
+        # Star settings
+        self.star_limit = 20
+
         # Bullets settings
         self.bullet_width = bullet_width
         self.bullet_height = bullet_height
@@ -34,6 +37,7 @@ class Settings:
         self.spaceship_speed = spaceship_speed
         self.bullet_speed = bullet_speed
         self.alien_speed = alien_speed
+        self.star_speed = 1.0
 
         # Points for shooting an alien
         self.alien_points = alien_points
@@ -50,6 +54,7 @@ class Settings:
         self.spaceship_speed *= self.speedup_scale
         self.alien_speed *= self.speedup_scale
         self.bullet_speed *= self.speedup_scale
+        self.star_speed *= self.speedup_scale
 
         # Increase point factor
         self.alien_points *= self.score_scale

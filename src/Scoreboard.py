@@ -9,6 +9,7 @@ class Scoreboard:
     def __init__(self, game, font_color=(30, 30, 30)):
         """Initialize scoring properties"""
         # Grab surface from the game
+        self.game = game
         self.surface = game.surface
         self.surface_rect = self.surface.get_rect()
         # Use settings and statistics from the game
@@ -25,6 +26,8 @@ class Scoreboard:
         self.set_highscore()
         # Set initial level text
         self.set_level()
+        # Set initial spaceships count
+        self.set_spaceships()
 
     def set_score(self):
         """Make rendered image from score text"""
@@ -63,11 +66,23 @@ class Scoreboard:
         self.level_rect.right = self.score_rect.right
         self.level_rect.top = self.score_rect.bottom
 
+    def set_spaceships(self):
+        """Render count of spaceships left"""
+        increase = 0
+        self.spaceships = Group()
+        for spaceship_num in range(self.stats.spaceship_left):
+            spaceship = Spaceship(self.game)
+            spaceship.rect.x = 10 + spaceship_num * spaceship.rect.width + increase
+            spaceship.rect.y = 10
+            self.spaceships.add(spaceship)
+            increase += 5
+
     def draw(self):
-        """Draw score, highscore and level onto the surface"""
+        """Draw score, highscore, level and spaceships onto the surface"""
         self.surface.blit(self.score_image, self.score_rect)
         self.surface.blit(self.highscore_image, self.highscore_rect)
         self.surface.blit(self.level_image, self.level_rect)
+        self.spaceships.draw(self.surface)
 
     def check_highscore(self):
         """Check if there is a new highscore, set it"""
