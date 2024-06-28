@@ -40,3 +40,8 @@ class Spaceship:
 
         # Update real rect position
         self.rect.x = self.x
+
+    def center(self):
+        """Center the spaceship"""
+        self.rect.midbottom = self.surface_rect.midbottom
+        self.x = float(self.rect.x)

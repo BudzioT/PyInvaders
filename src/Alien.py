@@ -1,7 +1,6 @@
 import pygame
 from pygame.sprite import Sprite
 
-
 class Alien(Sprite):
     """Class that represents an enemy alien"""
     def __init__(self, game):
@@ -26,5 +25,11 @@ class Alien(Sprite):
 
     def update(self):
         """Update the position of alien"""
-        # Move alien to the right
-        pass
+        # Move alien in specified direction
+        self.x += self.settings.alien_speed * self.settings.fleet_direction
+        self.rect.x = self.x
+
+    def check_edges(self):
+        """Return if alien touches the edge"""
+        surface_rect = self.surface.get_rect()
+        return (self.rect.right >= surface_rect.right) or (self.rect.left <= 0)

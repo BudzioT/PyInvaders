@@ -1,10 +1,13 @@
 import sys
+from time import sleep
+
 import pygame
 
 from Settings import Settings
 from Spaceship import Spaceship
 from Bullet import Bullet
 from Alien import Alien
+from Stats import Stats
 
 
 class PyInvaders:
@@ -15,7 +18,7 @@ class PyInvaders:
         pygame.init()
 
         # Set game settings
-        self.settings = Settings(size)
+        self.settings = Settings(size, bullet_width=500, fleet_drop_speed=50)
 
         # Set new surface with certain size and name PyInvaders
         if fullscreen:
@@ -27,6 +30,8 @@ class PyInvaders:
         # Timer for frame rate calculation
         self.timer = pygame.time.Clock()
 
+        # Game statistics
+        self.stats = Stats(self)
         # Spaceship - the player
         self.spaceship = Spaceship(self)
         # Bullets group
@@ -45,6 +50,7 @@ class PyInvaders:
             # Update positions
             self.spaceship.update_pos()
             self.bullets.update()
+            self._update_aliens()
             # Update the surface
             self._update_surface()
             # Run the loop in 60 FPS
@@ -119,6 +125,8 @@ class PyInvaders:
             bullet.draw()
         # Cleanup old ones
         self._cleanup_bullets()
+        # Check for collision between bullets and aliens
+        self._check_bullets_collisions()
 
     def _create_fleet(self):
         """Create fleet of aliens"""
@@ -154,6 +162,66 @@ class PyInvaders:
         new_alien.rect.y = current_y
         # Add it to the fleet
         self.aliens.add(new_alien)
+
+    def _update_aliens(self):
+        """Update all aliens positions"""
+        self.aliens.update()
+        self._check_fleet_edges()
+
+        # Check for collisions between spaceship and aliens
+        if pygame.sprite.spritecollideany(self.spaceship, self.aliens):
+            # Handle spaceship getting hit
+            self._spaceship_hit()
+
+    def _check_fleet_edges(self):
+        """If aliens touch the edge, change the direction"""
+        for alien in self.aliens.sprites():
+            if alien.check_edges():
+                self._change_fleet_direction()
+                break
+
+    def _change_fleet_direction(self):
+        """Move the fleet down and change its direction"""
+        # Move every alien down
+        for alien in self.aliens.sprites():
+            alien.rect.y += self.settings.fleet_drop_speed
+        # Change direction to opposite of the current one
+        self.settings.fleet_direction *= -1
+
+    def _check_bullets_collisions(self):
+        """Check for collisions between bullets and aliens, spawn aliens if needed"""
+        # Check for collisions with aliens
+        collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
+
+        # If all aliens are destroyed, spawn new ones and destroy old bullets
+        if not self.aliens:
+            self.bullets.empty()
+            self._create_fleet()
+
+    def _spaceship_hit(self):
+        """Handle spaceship getting hit"""
+        # Decrement spaceships count
+        self.stats.spaceship_left -= 1
+        # Clean remaining bullets and aliens
+        self.bullets.empty()
+        self.aliens.empty()
+
+        # Create new fleet of aliens, move spaceship to the starting position
+        self._create_fleet()
+        self.spaceship.center()
+
+        # Wait a while to give player time
+        sleep(0.5)
+
+    def _check_bottom_collision(self):
+        """Check collision between bottom of the surface and aliens"""
+        # Check for collisions with every alien
+        for alien in self.aliens.sprites():
+            # If it touches or is lower than the visible surface,
+            # indicate spaceship getting hit
+            if alien.rect.bottom >= self.settings.window_height:
+                self._spaceship_hit()
+                break
 
 
 # If filled is called directly, create and run the game
