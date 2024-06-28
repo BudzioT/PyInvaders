@@ -8,6 +8,7 @@ from Spaceship import Spaceship
 from Bullet import Bullet
 from Alien import Alien
 from Stats import Stats
+from Button import Button
 
 
 class PyInvaders:
@@ -16,6 +17,9 @@ class PyInvaders:
     def __init__(self, size=(720, 576), fullscreen=False):
         """Initialize the game"""
         pygame.init()
+
+        # Set game to active
+        self.active = False
 
         # Set game settings
         self.settings = Settings(size, bullet_width=500, fleet_drop_speed=50)
@@ -42,15 +46,22 @@ class PyInvaders:
         # Create alien fleet
         self._create_fleet()
 
+        # Create Start Button
+        self.start_button = Button(self, "Start")
+
     def run(self):
         """Run the game"""
         while True:
             # Handle events
             self._get_events()
-            # Update positions
-            self.spaceship.update_pos()
-            self.bullets.update()
-            self._update_aliens()
+
+            # If the game is active, run the entire mechanics
+            if self.active:
+                # Update positions
+                self.spaceship.update_pos()
+                self.bullets.update()
+                self._update_aliens()
+
             # Update the surface
             self._update_surface()
             # Run the loop in 60 FPS
@@ -62,6 +73,11 @@ class PyInvaders:
             # If user wants to quit, do it
             if event.type == pygame.QUIT:
                 sys.exit()
+            # Check for mouse presses
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                # Get mouse position, check if it touches the Start button
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_start(mouse_pos)
 
             # On pressing a key
             elif event.type == pygame.KEYDOWN:
@@ -76,6 +92,10 @@ class PyInvaders:
         self.spaceship.draw()
         self._update_bullets()
         self.aliens.draw(surface=self.surface)
+
+        # If the game isn't active, draw the Start button
+        if not self.active:
+            self.start_button.draw_button()
 
         # Update the contents of a surface
         pygame.display.flip()
@@ -172,6 +192,8 @@ class PyInvaders:
         if pygame.sprite.spritecollideany(self.spaceship, self.aliens):
             # Handle spaceship getting hit
             self._spaceship_hit()
+        # Check for collisions between aliens and bottom part of visible surface
+        self._check_bottom_collision()
 
     def _check_fleet_edges(self):
         """If aliens touch the edge, change the direction"""
@@ -200,6 +222,13 @@ class PyInvaders:
 
     def _spaceship_hit(self):
         """Handle spaceship getting hit"""
+        # If this was the last live, set game status to not active
+        if self.stats.spaceship_left < 0:
+            self.active = False
+            # Show the mouse
+            pygame.mouse.set_visible(True)
+            return None
+
         # Decrement spaceships count
         self.stats.spaceship_left -= 1
         # Clean remaining bullets and aliens
@@ -222,6 +251,24 @@ class PyInvaders:
             if alien.rect.bottom >= self.settings.window_height:
                 self._spaceship_hit()
                 break
+
+    def _check_start(self, mouse_pos):
+        """If mouse is on the Start button, start the game"""
+        if self.start_button.rect.collidepoint(mouse_pos):
+            # Reset statistics
+            self.stats.reset_stats()
+            self.active = True
+
+            # Cleanup bullets and aliens
+            self.bullets.empty()
+            self.aliens.empty()
+            # Create new set of aliens
+            self._create_fleet()
+            # Reset the ship position
+            self.spaceship.center()
+
+            # Hide the mouse when playing
+            pygame.mouse.set_visible(False)
 
 
 # If filled is called directly, create and run the game
