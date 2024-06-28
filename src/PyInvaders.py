@@ -12,6 +12,7 @@ from Star import Star
 from Stats import Stats
 from Button import Button
 from Scoreboard import Scoreboard
+from Title import Title
 
 
 class PyInvaders:
@@ -19,7 +20,15 @@ class PyInvaders:
 
     def __init__(self, size=(720, 576), fullscreen=False):
         """Initialize the game"""
+        # Initialize pygame
         pygame.init()
+        # Initialize pygame mixer
+        pygame.mixer.init()
+
+        # Set sounds
+        self.shoot_sound = pygame.mixer.Sound("sounds/shoot.wav")
+        self.death_sound = pygame.mixer.Sound("sounds/explosion.wav")
+        self.kill_sound = pygame.mixer.Sound("sounds/invaderkilled.wav")
 
         # Set game to active
         self.active = False
@@ -27,7 +36,7 @@ class PyInvaders:
         self.choose_diff = False
 
         # Set game settings
-        self.settings = Settings(size, bullet_width=500, fleet_drop_speed=50)
+        self.settings = Settings(size)
 
         # Set new surface with certain size and name PyInvaders
         if fullscreen:
@@ -66,6 +75,8 @@ class PyInvaders:
         # Hard button
         self.hard_button = Button(self, "Hard", button_color=(250, 35, 60),
                                   center=self.settings.window_width - 100)
+        # Title text
+        self.title = Title(self)
 
     def run(self):
         """Run the game"""
@@ -91,6 +102,8 @@ class PyInvaders:
         for event in pygame.event.get():
             # If user wants to quit, do it
             if event.type == pygame.QUIT:
+                # Save the highscore
+                self.stats.save_highscore()
                 sys.exit()
             # Check for mouse presses
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -121,10 +134,19 @@ class PyInvaders:
         # Draw the scoreboard
         self.scoreboard.draw()
 
-        # If the game isn't active, draw the choose difficulty button
+        # If the game isn't active, draw the choose difficulty buttons
         if not self.active and not self.choose_diff:
+            # Fill the background
+            self.surface.fill(self.settings.bg_color)
+            # Draw the title
+            self.title.draw()
+            # Draw the button
             self.start_button.draw_button()
+        # If difficulty isn't chosen, draw the start button
         elif self.choose_diff:
+            # Fill the background
+            self.surface.fill(self.settings.bg_color)
+            # Draw the buttons
             self.easy_button.draw_button()
             self.normal_button.draw_button()
             self.hard_button.draw_button()
@@ -136,6 +158,7 @@ class PyInvaders:
         """Handle events when releasing keys"""
         # Exit when escape is clicked
         if event.key == pygame.K_ESCAPE:
+            self.stats.save_highscore()
             sys.exit()
         # Stop movement to the left
         elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
@@ -168,6 +191,7 @@ class PyInvaders:
         if len(self.bullets) < self.settings.bullets_limit:
             bullet = Bullet(self)
             self.bullets.add(bullet)
+            self.shoot_sound.play()
 
     def _cleanup_bullets(self):
         """Cleanup bullets after they leave the visible surface"""
@@ -280,6 +304,8 @@ class PyInvaders:
             # Check every collision, increase the score with every one of them
             for aliens in collisions.values():
                 self.stats.score += self.settings.alien_points * len(aliens)
+                # Play alien kill sound
+                self.kill_sound.play()
             # Update the displayed score
             self.scoreboard.set_score()
             self.scoreboard.check_highscore()
@@ -297,6 +323,9 @@ class PyInvaders:
 
     def _spaceship_hit(self):
         """Handle spaceship getting hit"""
+        # Play death sound effect
+        self.death_sound.play()
+
         # If this was the last live, set game status to not active
         if self.stats.spaceship_left <= 0:
             self.active = False
@@ -341,6 +370,8 @@ class PyInvaders:
             self.choose_diff = True
 
     def _start_game(self, speed_factor, point_factor):
+        """Start the game, reset everything needed, set the next game based of
+        off difficulty chosen"""
         # Reset statistics
         self.stats.reset_stats()
         # Reset the score
@@ -365,7 +396,7 @@ class PyInvaders:
 
         # Set speed and point factor
         self.settings.speedup_scale = speed_factor
-        
+        self.settings.score_scale = point_factor
 
         # Hide the mouse when playing
         pygame.mouse.set_visible(False)
@@ -373,9 +404,21 @@ class PyInvaders:
     def _check_choose_diff(self, mouse_pos):
         """Check if user chose any difficulty"""
         if self.choose_diff and not self.active:
+            # If user picked easy, use small factors
             if self.easy_button.rect.collidepoint(mouse_pos):
-                self._start_game()
-
+                self._start_game(0.8, 0.8)
+                self.choose_diff = False
+                self.active = True
+            # If user picked normal, use normal factors
+            elif self.normal_button.rect.collidepoint(mouse_pos):
+                self._start_game(1.1, 1.5)
+                self.choose_diff = False
+                self.active = True
+            # If user picked hard, use big factors
+            elif self.hard_button.rect.collidepoint(mouse_pos):
+                self._start_game(1.4, 2.5)
+                self.choose_diff = False
+                self.active = True
 
 
 # If filled is called directly, create and run the game

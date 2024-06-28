@@ -20,14 +20,8 @@ class Scoreboard:
         self.font_color = font_color
         self.font = pygame.font.SysFont(None, 48)
 
-        # Set initial score text
-        self.set_score()
-        # Set initial high score text
-        self.set_highscore()
-        # Set initial level text
-        self.set_level()
-        # Set initial spaceships count
-        self.set_spaceships()
+        # Set all scoreboard images
+        self._set_images()
 
     def set_score(self):
         """Make rendered image from score text"""
@@ -90,3 +84,14 @@ class Scoreboard:
             # Set new highscore, update the text
             self.stats.high_score = self.stats.score
             self.set_highscore()
+
+    def _set_images(self):
+        """Set all scoreboard images"""
+        # Set initial score text
+        self.set_score()
+        # Set initial high score text
+        self.set_highscore()
+        # Set initial level text
+        self.set_level()
+        # Set initial spaceships count
+        self.set_spaceships()
