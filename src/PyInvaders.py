@@ -9,6 +9,7 @@ from Bullet import Bullet
 from Alien import Alien
 from Stats import Stats
 from Button import Button
+from Scoreboard import Scoreboard
 
 
 class PyInvaders:
@@ -36,6 +37,8 @@ class PyInvaders:
 
         # Game statistics
         self.stats = Stats(self)
+        # Game scoreboard
+        self.scoreboard = Scoreboard(self)
         # Spaceship - the player
         self.spaceship = Spaceship(self)
         # Bullets group
@@ -92,6 +95,9 @@ class PyInvaders:
         self.spaceship.draw()
         self._update_bullets()
         self.aliens.draw(surface=self.surface)
+
+        # Draw the scoreboard
+        self.scoreboard.draw()
 
         # If the game isn't active, draw the Start button
         if not self.active:
@@ -215,10 +221,17 @@ class PyInvaders:
         # Check for collisions with aliens
         collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
 
+        # If there is a collision, update the score
+        if collisions:
+            self.stats.score += self.settings.alien_points
+            self.scoreboard.set_score()
+
         # If all aliens are destroyed, spawn new ones and destroy old bullets
         if not self.aliens:
             self.bullets.empty()
             self._create_fleet()
+            # Speedup the game
+            self.settings.increase_speed()
 
     def _spaceship_hit(self):
         """Handle spaceship getting hit"""
@@ -253,10 +266,15 @@ class PyInvaders:
                 break
 
     def _check_start(self, mouse_pos):
-        """If mouse is on the Start button, start the game"""
-        if self.start_button.rect.collidepoint(mouse_pos):
+        """If mouse is on the Start button, start the game if it isn't started already"""
+        if self.start_button.rect.collidepoint(mouse_pos) and not self.active:
             # Reset statistics
             self.stats.reset_stats()
+            # Show last score
+            self.scoreboard.set_score()
+            # Return speed to basic one
+            self.settings.initialize_dynamic()
+            # Activate the game
             self.active = True
 
             # Cleanup bullets and aliens

@@ -9,3 +9,4 @@ class Stats:
     def reset_stats(self):
         """Reset statistics"""
         self.spaceship_left = self.settings.spaceship_limit
+        self.score = 0
