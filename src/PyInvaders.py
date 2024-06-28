@@ -23,6 +23,8 @@ class PyInvaders:
 
         # Set game to active
         self.active = False
+        # Set game to choose difficulty mode
+        self.choose_diff = False
 
         # Set game settings
         self.settings = Settings(size, bullet_width=500, fleet_drop_speed=50)
@@ -56,6 +58,15 @@ class PyInvaders:
         # Create Start Button
         self.start_button = Button(self, "Start")
 
+        # Easy button
+        self.easy_button = Button(self, "Easy", button_color=(125, 227, 70),
+                                  center=100)
+        # Normal button
+        self.normal_button = Button(self, "Normal", button_color=(240, 234, 117))
+        # Hard button
+        self.hard_button = Button(self, "Hard", button_color=(250, 35, 60),
+                                  center=self.settings.window_width - 100)
+
     def run(self):
         """Run the game"""
         while True:
@@ -83,9 +94,14 @@ class PyInvaders:
                 sys.exit()
             # Check for mouse presses
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                # Get mouse position, check if it touches the Start button
+                # Get mouse position, check if it touches any button
                 mouse_pos = pygame.mouse.get_pos()
-                self._check_start(mouse_pos)
+                # If user is choosing difficulty, check which one, if any, he clicked
+                if self.choose_diff:
+                    self._check_choose_diff(mouse_pos)
+                # If user is starting, check if he clicks start button
+                else:
+                    self._check_start(mouse_pos)
 
             # On pressing a key
             elif event.type == pygame.KEYDOWN:
@@ -97,17 +113,21 @@ class PyInvaders:
     def _update_surface(self):
         """Fill the surface and update it"""
         self.surface.fill(self.settings.bg_color)
+        self.stars.draw(surface=self.surface)
         self.spaceship.draw()
         self._update_bullets()
         self.aliens.draw(surface=self.surface)
-        self.stars.draw(surface=self.surface)
 
         # Draw the scoreboard
         self.scoreboard.draw()
 
-        # If the game isn't active, draw the Start button
-        if not self.active:
+        # If the game isn't active, draw the choose difficulty button
+        if not self.active and not self.choose_diff:
             self.start_button.draw_button()
+        elif self.choose_diff:
+            self.easy_button.draw_button()
+            self.normal_button.draw_button()
+            self.hard_button.draw_button()
 
         # Update the contents of a surface
         pygame.display.flip()
@@ -129,12 +149,19 @@ class PyInvaders:
 
     def _handle_keydown_events(self, event):
         """Handle events when pressing keys"""
-        # Indicate movement to the left
-        if event.key == pygame.K_LEFT or event.key == pygame.K_a:
-            self.spaceship.move_flags["Left"] = True
-        # Indicate movement to the right
-        elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
-            self.spaceship.move_flags["Right"] = True
+        # If game is active, handle movement key presses
+        if self.active:
+            # Indicate movement to the left
+            if event.key == pygame.K_LEFT or event.key == pygame.K_a:
+                self.spaceship.move_flags["Left"] = True
+            # Indicate movement to the right
+            elif event.key == pygame.K_RIGHT or event.key == pygame.K_d:
+                self.spaceship.move_flags["Right"] = True
+        # If game isn't active
+        else:
+            # On 'p', start the game
+            if event.key == pygame.K_p:
+                self._start_game()
 
     def _fire_bullet(self):
         """Create a bullet and add it to the bullets group"""
@@ -185,16 +212,20 @@ class PyInvaders:
             # Move vertically down
             current_y += 2 * alien_height
 
-    def _create_starGroup(self):
+    def _create_star_group(self):
         """Create group of stars"""
         # Create a star for size matters
         star = Star(self)
         # While there is still space for stars, spawn them randomly
         while len(self.stars) < self.settings.star_limit:
+            # Create a new star
             new_star = Star(self)
-            new_star.rect.x = randint(0, self.settings.window_width - star.surface_rect.width)
+            # Randomize its position
+            new_star.rect.x = randint(0, self.settings.window_width - star.rect.width)
+            new_star.rect.y = randint(0, self.settings.window_height -
+                                      int(0.3 * self.settings.window_height))
+            # Add it to the group
             self.stars.add(new_star)
-
 
     def _create_alien(self, current_x, current_y):
         """Create an alien at the given position, add it to the fleet"""
@@ -220,6 +251,7 @@ class PyInvaders:
 
     def _update_stars(self):
         """Update stars position"""
+        self._create_star_group()
         for star in self.stars.sprites():
             star.update()
 
@@ -301,35 +333,49 @@ class PyInvaders:
             # Check if the star is under the visible surface, clean it
             if star.rect.top >= self.settings.window_height:
                 self.stars.remove(star)
-                print("Star removed!!!")
 
     def _check_start(self, mouse_pos):
         """If mouse is on the Start button, start the game if it isn't started already"""
-        if self.start_button.rect.collidepoint(mouse_pos) and not self.active:
-            # Reset statistics
-            self.stats.reset_stats()
-            # Reset the score
-            self.scoreboard.set_score()
-            # Reset the level
-            self.scoreboard.set_level()
-            # Reset spaceships count
-            self.scoreboard.set_spaceships()
+        if (self.start_button.rect.collidepoint(mouse_pos) and not self.active
+                and not self.choose_diff):
+            self.choose_diff = True
 
-            # Return speed to basic one
-            self.settings.initialize_dynamic()
-            # Activate the game
-            self.active = True
+    def _start_game(self, speed_factor, point_factor):
+        # Reset statistics
+        self.stats.reset_stats()
+        # Reset the score
+        self.scoreboard.set_score()
+        # Reset the level
+        self.scoreboard.set_level()
+        # Reset spaceships count
+        self.scoreboard.set_spaceships()
 
-            # Cleanup bullets and aliens
-            self.bullets.empty()
-            self.aliens.empty()
-            # Create new set of aliens
-            self._create_fleet()
-            # Reset the ship position
-            self.spaceship.center()
+        # Return speed to basic one
+        self.settings.initialize_dynamic()
+        # Activate the game
+        self.active = True
 
-            # Hide the mouse when playing
-            pygame.mouse.set_visible(False)
+        # Cleanup bullets and aliens
+        self.bullets.empty()
+        self.aliens.empty()
+        # Create new set of aliens
+        self._create_fleet()
+        # Reset the ship position
+        self.spaceship.center()
+
+        # Set speed and point factor
+        self.settings.speedup_scale = speed_factor
+        
+
+        # Hide the mouse when playing
+        pygame.mouse.set_visible(False)
+
+    def _check_choose_diff(self, mouse_pos):
+        """Check if user chose any difficulty"""
+        if self.choose_diff and not self.active:
+            if self.easy_button.rect.collidepoint(mouse_pos):
+                self._start_game()
+
 
 
 # If filled is called directly, create and run the game

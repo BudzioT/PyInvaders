@@ -13,7 +13,7 @@ class Settings:
         self.spaceship_limit = 3
 
         # Star settings
-        self.star_limit = 20
+        self.star_limit = 50
 
         # Bullets settings
         self.bullet_width = bullet_width

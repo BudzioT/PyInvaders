@@ -11,7 +11,6 @@ class Star(Sprite):
         super().__init__()
         # Get game's surface
         self.surface = game.surface
-        self.surface_rect = game.surface.rect
         # Grab settings from the game
         self.settings = game.settings
 
@@ -20,7 +19,7 @@ class Star(Sprite):
         self.rect = self.image.get_rect()
 
         # Spawn the stars at the top of the screen
-        self.rect.y = self.rect.height
+        self.rect.y = 0
         self.rect.x = self.rect.width
 
         # Get random star speed

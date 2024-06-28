@@ -4,7 +4,7 @@ import pygame.font
 class Button:
     """Class representing button with a label"""
     def __init__(self, game, label, width=200, height=50, button_color=(0, 135, 0),
-                 font_color=(255, 255, 255)):
+                 font_color=(255, 255, 255), center=0):
         """Initialize button"""
         # Set the surface exactly like the game
         self.surface = game.surface
@@ -18,7 +18,11 @@ class Button:
 
         # Build button's size, center it
         self.rect = pygame.Rect(0, 0, width, height)
-        self.rect.center = self.surface_rect.center
+        if center == 0:
+            self.rect.center = self.surface_rect.center
+        else:
+            self.rect.centerx = center
+            self.rect.centery = self.surface_rect.centery
 
         # Set label
         self._set_label(label)
@@ -30,7 +34,7 @@ class Button:
                                             self.button_color)
         # Place it in center of the surface
         self.label_image_rect = self.label_image.get_rect()
-        self.label_image_rect.center = self.surface_rect.center
+        self.label_image_rect.center = self.rect.center
 
     def draw_button(self):
         """Draw the button with message onto the surface"""
