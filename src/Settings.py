@@ -28,7 +28,7 @@ class Settings:
         self.initialize_dynamic()
 
     def initialize_dynamic(self, spaceship_speed=1.5, bullet_speed=2.5,
-                           alien_speed=1.0, alien_points=1):
+                           alien_speed=1.0, alien_points=5, score_scale=1.5):
         """Initialize settings that change mid-game"""
         # Speed of objects
         self.spaceship_speed = spaceship_speed
@@ -38,11 +38,18 @@ class Settings:
         # Points for shooting an alien
         self.alien_points = alien_points
 
+        # Score increase after speedup scale
+        self.score_scale = score_scale
+
         # Alien fleet direction: 1 is Right, -1 is Left
         self.fleet_direction = 1
 
     def increase_speed(self):
-        """Increase speed of objects"""
+        """Increase settings of objects when game speeds up"""
+        # Increase speeds
         self.spaceship_speed *= self.speedup_scale
         self.alien_speed *= self.speedup_scale
         self.bullet_speed *= self.speedup_scale
+
+        # Increase point factor
+        self.alien_points *= self.score_scale

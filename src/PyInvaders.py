@@ -223,20 +223,28 @@ class PyInvaders:
 
         # If there is a collision, update the score
         if collisions:
-            self.stats.score += self.settings.alien_points
+            # Check every collision, increase the score with every one of them
+            for aliens in collisions.values():
+                self.stats.score += self.settings.alien_points * len(aliens)
+            # Update the displayed score
             self.scoreboard.set_score()
+            self.scoreboard.check_highscore()
 
         # If all aliens are destroyed, spawn new ones and destroy old bullets
         if not self.aliens:
             self.bullets.empty()
             self._create_fleet()
+
+            # Increase level
+            self.stats.level += 1
+            self.scoreboard.set_level()
             # Speedup the game
             self.settings.increase_speed()
 
     def _spaceship_hit(self):
         """Handle spaceship getting hit"""
         # If this was the last live, set game status to not active
-        if self.stats.spaceship_left < 0:
+        if self.stats.spaceship_left <= 0:
             self.active = False
             # Show the mouse
             pygame.mouse.set_visible(True)
@@ -270,8 +278,11 @@ class PyInvaders:
         if self.start_button.rect.collidepoint(mouse_pos) and not self.active:
             # Reset statistics
             self.stats.reset_stats()
-            # Show last score
+            # Reset the score
             self.scoreboard.set_score()
+            # Reset the level
+            self.scoreboard.set_level()
+
             # Return speed to basic one
             self.settings.initialize_dynamic()
             # Activate the game

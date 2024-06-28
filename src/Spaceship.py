@@ -1,10 +1,12 @@
 import pygame
+from pygame.sprite import Sprite
 
 
-class Spaceship:
+class Spaceship(Sprite):
     """Class representing a spaceship"""
     def __init__(self, game):
         """Initialize spaceship at starting position"""
+        super().__init__()
         # Set surface and its rectangle from game reference
         self.surface = game.surface
         self.surface_rect = self.surface.get_rect()
