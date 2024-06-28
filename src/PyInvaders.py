@@ -4,6 +4,7 @@ import pygame
 from Settings import Settings
 from Spaceship import Spaceship
 from Bullet import Bullet
+from Alien import Alien
 
 
 class PyInvaders:
@@ -30,6 +31,11 @@ class PyInvaders:
         self.spaceship = Spaceship(self)
         # Bullets group
         self.bullets = pygame.sprite.Group()
+        # Aliens group
+        self.aliens = pygame.sprite.Group()
+
+        # Create alien fleet
+        self._create_fleet()
 
     def run(self):
         """Run the game"""
@@ -63,6 +69,7 @@ class PyInvaders:
         self.surface.fill(self.settings.bg_color)
         self.spaceship.draw()
         self._update_bullets()
+        self.aliens.draw(surface=self.surface)
 
         # Update the contents of a surface
         pygame.display.flip()
@@ -113,6 +120,40 @@ class PyInvaders:
         # Cleanup old ones
         self._cleanup_bullets()
 
+    def _create_fleet(self):
+        """Create fleet of aliens"""
+        # Create first alien to get aliens size
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
+
+        # Current drawing horizontal position
+        current_x, current_y = alien_width, alien_height
+
+        # While there is space to draw alien, draw it
+        # (space between aliens is the same as one alien's width and height)
+        # Margin between right edge is two aliens width, between bottom is three aliens height
+
+        # Draw rows of aliens
+        while current_y < (self.settings.window_height - 3 * alien_height):
+            # Draw columns of aliens
+            while current_x < (self.settings.window_width - 2 * alien_width):
+                self._create_alien(current_x, current_y)
+                # Move drawing position by size of the current alien plus additional space
+                current_x += 2 * alien_width
+            # After drawing every column, go back to horizontal start
+            current_x = alien_width
+            # Move vertically down
+            current_y += 2 * alien_height
+
+    def _create_alien(self, current_x, current_y):
+        """Create an alien at the given position, add it to the fleet"""
+        # Create a new alien, set its position to current drawing one
+        new_alien = Alien(self)
+        new_alien.x = current_x
+        new_alien.rect.x = current_x
+        new_alien.rect.y = current_y
+        # Add it to the fleet
+        self.aliens.add(new_alien)
 
 
 # If filled is called directly, create and run the game

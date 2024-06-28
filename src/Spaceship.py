@@ -11,9 +11,9 @@ class Spaceship:
         # Set settings exactly like game settings
         self.settings = game.settings
 
-        # Load the sprite, get its hitboxes
-        self.sprite = pygame.image.load("images/player0.bmp")
-        self.rect = self.sprite.get_rect()
+        # Load the image, get its hitboxes
+        self.image = pygame.image.load("images/player0.bmp")
+        self.rect = self.image.get_rect()
 
         # Spawn the spaceship at the bottom of game surface
         self.rect.midbottom = self.surface_rect.midbottom
@@ -29,7 +29,7 @@ class Spaceship:
 
     def draw(self):
         """Draw the spaceship"""
-        self.surface.blit(self.sprite, self.rect)
+        self.surface.blit(self.image, self.rect)
 
     def update_pos(self):
         """Update position based of movement flags"""
