@@ -10,8 +10,10 @@ But If you want to build:
 - Compile the PyInvaders.py file, compiling other ones without it doesn't result in anything
 
 ## :camera:Screenshots
-- Menu:<br>
-- Game:<br>
+- Menu:<br>![image](https://github.com/BudzioT/PyInvaders/assets/145849460/266e95df-4c55-48bf-8ff3-037ad06648db)
+
+- Game:<br>![image](https://github.com/BudzioT/PyInvaders/assets/145849460/3a01b50c-f5bb-4f15-8af4-3c3d45a0bd6f)
+
 
 ## :video_game: Controls
 - Movement: WASD or arrows
