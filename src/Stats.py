@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import os
 
 import pygame.mixer
 
@@ -11,6 +12,9 @@ class Stats:
         # Grab settings from the game
         self.settings = game.settings
         self.reset_stats()
+
+        # Get path to files
+        self.base_path = game.base_path
 
         # Highscore that doesn't reset
         self.high_score = 0
@@ -25,7 +29,7 @@ class Stats:
     def read_highscore(self):
         """Read highscore from a file"""
         # Open file
-        file = Path("data/highscore.json")
+        file = Path(os.path.join(self.base_path, "data/highscore.json"))
         # Set new highscore to 0 in case of a failure
         new_highscore = 0
         # If file exists, read highscore from it
@@ -41,6 +45,6 @@ class Stats:
     def save_highscore(self):
         """Save highscore to a file"""
         # Open file
-        file = Path("data/highscore.json")
+        file = Path(os.path.join(self.base_path, "data/highscore.json"))
         # Write highscore into it
         file.write_text(json.dumps(self.high_score))

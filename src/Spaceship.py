@@ -1,3 +1,5 @@
+import os
+
 import pygame
 from pygame.sprite import Sprite
 
@@ -14,7 +16,8 @@ class Spaceship(Sprite):
         self.settings = game.settings
 
         # Load the image, get its hitboxes
-        self.image = pygame.image.load("images/player0.bmp")
+        base_path = game.base_path
+        self.image = pygame.image.load(os.path.join(base_path, "images/player0.bmp"))
         self.rect = self.image.get_rect()
 
         # Spawn the spaceship at the bottom of game surface

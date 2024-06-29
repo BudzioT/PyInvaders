@@ -1,3 +1,5 @@
+import os
+
 import pygame
 from pygame.sprite import Sprite
 
@@ -12,7 +14,8 @@ class Alien(Sprite):
         self.settings = game.settings
 
         # Load the image, set its hitboxes
-        self.image = pygame.image.load("images/enemy0.bmp")
+        base_path = game.base_path
+        self.image = pygame.image.load(os.path.join(base_path, "images/enemy0.bmp"))
         self.rect = self.image.get_rect()
 
         # Spawn the aliens at the top left part of the surface

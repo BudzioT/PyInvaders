@@ -1,4 +1,5 @@
 import sys
+import os
 from time import sleep
 from random import randint
 
@@ -25,10 +26,13 @@ class PyInvaders:
         # Initialize pygame mixer
         pygame.mixer.init()
 
+        # Get directory of the current script
+        self.base_path = os.path.dirname(os.path.abspath(__file__))
+
         # Set sounds
-        self.shoot_sound = pygame.mixer.Sound("sounds/shoot.wav")
-        self.death_sound = pygame.mixer.Sound("sounds/explosion.wav")
-        self.kill_sound = pygame.mixer.Sound("sounds/invaderkilled.wav")
+        self.shoot_sound = pygame.mixer.Sound(os.path.join(self.base_path, "sounds/shoot.wav"))
+        self.death_sound = pygame.mixer.Sound(os.path.join(self.base_path, "sounds/explosion.wav"))
+        self.kill_sound = pygame.mixer.Sound(os.path.join(self.base_path, "sounds/invaderkilled.wav"))
 
         # Set game to active
         self.active = False
@@ -341,6 +345,9 @@ class PyInvaders:
         self.bullets.empty()
         self.aliens.empty()
 
+        # Save the highscore in case of rage-quit
+        self.stats.save_highscore()
+
         # Create new fleet of aliens, move spaceship to the starting position
         self._create_fleet()
         self.spaceship.center()
@@ -425,3 +432,4 @@ class PyInvaders:
 if __name__ == "__main__":
     game = PyInvaders()
     game.run()
+    game.stats.save_highscore()

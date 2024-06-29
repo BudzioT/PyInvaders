@@ -1,7 +1,7 @@
 class Settings:
     """Settings of the game"""
     def __init__(self, size, bg_color=(116, 147, 163), bullet_width=3, bullet_height=15,
-                 bullet_color=(60, 60, 60), bullets_limit=3, fleet_drop_speed=1,
+                 bullet_color=(60, 60, 60), bullets_limit=3, fleet_drop_speed=1.8,
                  speedup_scale=1.1):
         """Initialize static game settings"""
         # General settings
